@@ -3,9 +3,10 @@ import streamlit.components.v1 as components
 from pathlib import Path
 import base64
 
-# ---------------------------------------------------------
-# CONFIGURACIÓN
-# ---------------------------------------------------------
+# =========================================================
+# CONFIGURACIÓN STREAMLIT
+# =========================================================
+
 st.set_page_config(
     page_title="MARWAN VS TROLLS",
     page_icon="🏍️",
@@ -13,475 +14,1067 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ---------------------------------------------------------
-# ARCHIVOS
-# ---------------------------------------------------------
+
+# =========================================================
+# CARPETA DE ARCHIVOS
+# =========================================================
+
 BASE_DIR = Path(__file__).parent
 ASSETS_DIR = BASE_DIR / "assets"
 
 MARWAN_FILE = ASSETS_DIR / "marwan.png"
+BACKGROUND_FILE = ASSETS_DIR / "fondo.png"
 MUSIC_FILE = ASSETS_DIR / "musica.mp3"
 
 
-# ---------------------------------------------------------
-# CONVERTIR ARCHIVOS A BASE64
-# ---------------------------------------------------------
+# =========================================================
+# CONVERTIR ARCHIVO A BASE64
+# =========================================================
+
 def file_to_base64(file_path):
+
     if file_path.exists():
+
         with open(file_path, "rb") as file:
-            return base64.b64encode(file.read()).decode()
+
+            return base64.b64encode(
+                file.read()
+            ).decode()
+
     return ""
 
 
-# Imagen
-marwan_base64 = file_to_base64(MARWAN_FILE)
+# =========================================================
+# FOTO DE MARWAN
+# =========================================================
+
+marwan_base64 = file_to_base64(
+    MARWAN_FILE
+)
 
 if marwan_base64:
-    marwan_image = "data:image/png;base64," + marwan_base64
+
+    marwan_image = (
+        "data:image/png;base64,"
+        + marwan_base64
+    )
+
 else:
+
     marwan_image = ""
 
 
-# Música
-music_base64 = file_to_base64(MUSIC_FILE)
+# =========================================================
+# FOTO DE FONDO
+# =========================================================
+
+background_base64 = file_to_base64(
+    BACKGROUND_FILE
+)
+
+if background_base64:
+
+    background_image = (
+        "data:image/png;base64,"
+        + background_base64
+    )
+
+else:
+
+    background_image = ""
+
+
+# =========================================================
+# MÚSICA
+# =========================================================
+
+music_base64 = file_to_base64(
+    MUSIC_FILE
+)
 
 if music_base64:
-    music_source = "data:audio/mpeg;base64," + music_base64
+
+    music_source = (
+        "data:audio/mpeg;base64,"
+        + music_base64
+    )
+
 else:
+
     music_source = ""
 
 
-# ---------------------------------------------------------
-# HTML DEL JUEGO
-# ---------------------------------------------------------
+# =========================================================
+# JUEGO
+# =========================================================
+
 game = """
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-      content="width=device-width,
-               initial-scale=1.0,
-               maximum-scale=1.0,
-               user-scalable=no">
+<meta
+    name="viewport"
+    content="
+        width=device-width,
+        initial-scale=1.0,
+        maximum-scale=1.0,
+        user-scalable=no
+    "
+>
 
 <style>
 
+/* =====================================================
+   CONFIGURACIÓN GENERAL
+===================================================== */
+
 * {
+
     box-sizing: border-box;
+
     -webkit-tap-highlight-color: transparent;
+
 }
 
 html,
 body {
+
     margin: 0;
+
     padding: 0;
+
     width: 100%;
+
     height: 100%;
+
     overflow: hidden;
+
     background: #111;
+
     font-family: Arial, sans-serif;
+
 }
 
 body {
+
     display: flex;
+
     justify-content: center;
+
     align-items: center;
+
 }
+
+
+/* =====================================================
+   JUEGO
+===================================================== */
 
 #gameContainer {
+
     width: 100%;
+
     max-width: 900px;
-    height: 720px;
+
+    height: min(720px, 100vh);
+
+    min-height: 500px;
+
     position: relative;
+
     overflow: hidden;
-    background:
-        linear-gradient(
-            to bottom,
-            #67c8ff 0%,
-            #bdefff 55%,
-            #f5d28b 56%,
-            #d7a75c 100%
-        );
+
+    background-image:
+        url("__BACKGROUND_IMAGE__");
+
+    background-size: cover;
+
+    background-position: center;
+
+    background-repeat: no-repeat;
+
     border-radius: 15px;
+
     border: 4px solid #222;
+
+    touch-action: none;
+
 }
 
-/* ----------------------------------------------------
-   SOL
----------------------------------------------------- */
+
+/* =====================================================
+   SOL DECORATIVO
+===================================================== */
 
 .sun {
+
     position: absolute;
-    width: 90px;
-    height: 90px;
+
+    width: 80px;
+
+    height: 80px;
+
     background: #ffd43b;
+
     border-radius: 50%;
-    right: 35px;
+
+    right: 25px;
+
     top: 25px;
-    box-shadow: 0 0 35px #ffd43b;
+
+    opacity: 0.8;
+
+    box-shadow:
+        0 0 30px #ffd43b;
+
 }
 
-/* ----------------------------------------------------
-   MARWAN
----------------------------------------------------- */
 
-#player {
-    position: absolute;
-    width: 90px;
-    height: 120px;
-    bottom: 75px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 20;
-}
-
-.player-body {
-    position: absolute;
-    width: 45px;
-    height: 55px;
-    background: #1769aa;
-    border-radius: 15px 15px 8px 8px;
-    left: 23px;
-    top: 48px;
-}
-
-.player-head {
-    position: absolute;
-    width: 58px;
-    height: 58px;
-    background: #e5a16f;
-    border-radius: 50%;
-    left: 16px;
-    top: 0;
-    overflow: hidden;
-}
-
-.player-head img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-.player-face {
-    position: absolute;
-    width: 58px;
-    height: 58px;
-    left: 16px;
-    top: 0;
-    border-radius: 50%;
-    background: #e5a16f;
-}
-
-.eye {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    background: #222;
-    border-radius: 50%;
-    top: 22px;
-}
-
-.eye.left {
-    left: 17px;
-}
-
-.eye.right {
-    right: 17px;
-}
-
-.mouth {
-    position: absolute;
-    width: 20px;
-    height: 7px;
-    border-bottom: 3px solid #222;
-    border-radius: 50%;
-    left: 19px;
-    top: 37px;
-}
-
-.arm {
-    position: absolute;
-    width: 13px;
-    height: 42px;
-    background: #e5a16f;
-    border-radius: 10px;
-    top: 53px;
-}
-
-.arm.left {
-    left: 9px;
-    transform: rotate(20deg);
-}
-
-.arm.right {
-    right: 9px;
-    transform: rotate(-20deg);
-}
-
-.leg {
-    position: absolute;
-    width: 15px;
-    height: 35px;
-    background: #333;
-    border-radius: 8px;
-    top: 98px;
-}
-
-.leg.left {
-    left: 24px;
-}
-
-.leg.right {
-    right: 24px;
-}
-
-.gun {
-    position: absolute;
-    width: 48px;
-    height: 12px;
-    background: #222;
-    right: -12px;
-    top: 63px;
-    border-radius: 5px;
-}
-
-/* ----------------------------------------------------
-   TROLL
----------------------------------------------------- */
-
-.troll {
-    position: absolute;
-    width: 62px;
-    height: 70px;
-    z-index: 10;
-}
-
-.troll-head {
-    position: absolute;
-    width: 52px;
-    height: 52px;
-    background: #6b38a8;
-    border-radius: 50%;
-    left: 5px;
-    top: 5px;
-}
-
-.troll-eye {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background: white;
-    border-radius: 50%;
-    top: 18px;
-}
-
-.troll-eye::after {
-    content: "";
-    position: absolute;
-    width: 5px;
-    height: 5px;
-    background: black;
-    border-radius: 50%;
-    left: 2px;
-    top: 2px;
-}
-
-.troll-eye.left {
-    left: 14px;
-}
-
-.troll-eye.right {
-    right: 14px;
-}
-
-.troll-mouth {
-    position: absolute;
-    width: 27px;
-    height: 12px;
-    background: #222;
-    border-radius: 0 0 20px 20px;
-    left: 13px;
-    top: 33px;
-}
-
-.troll-horn {
-    position: absolute;
-    width: 15px;
-    height: 22px;
-    background: #e8e8e8;
-    top: -13px;
-    border-radius: 50% 50% 20% 20%;
-}
-
-.troll-horn.left {
-    left: 4px;
-    transform: rotate(-20deg);
-}
-
-.troll-horn.right {
-    right: 4px;
-    transform: rotate(20deg);
-}
-
-/* ----------------------------------------------------
-   DISPARO
----------------------------------------------------- */
-
-.bullet {
-    position: absolute;
-    width: 9px;
-    height: 20px;
-    background: #ffe600;
-    border-radius: 5px;
-    z-index: 15;
-    box-shadow: 0 0 10px #ffae00;
-}
-
-/* ----------------------------------------------------
-   INFORMACIÓN
----------------------------------------------------- */
-
-#hud {
-    position: absolute;
-    left: 12px;
-    top: 12px;
-    z-index: 100;
-    background: rgba(0,0,0,0.65);
-    color: white;
-    padding: 10px 14px;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: bold;
-}
+/* =====================================================
+   TÍTULO
+===================================================== */
 
 #title {
+
     position: absolute;
+
     top: 10px;
+
     left: 50%;
-    transform: translateX(-50%);
+
+    transform:
+        translateX(-50%);
+
     color: white;
-    font-size: 24px;
+
+    font-size: 25px;
+
     font-weight: bold;
-    text-shadow: 3px 3px 4px #000;
+
+    text-shadow:
+        3px 3px 5px #000;
+
     z-index: 90;
+
     text-align: center;
+
     white-space: nowrap;
+
 }
 
-#message {
+
+/* =====================================================
+   MARCADOR
+===================================================== */
+
+#hud {
+
     position: absolute;
-    top: 45%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.82);
+
+    left: 10px;
+
+    top: 10px;
+
+    z-index: 100;
+
+    background:
+        rgba(0,0,0,0.70);
+
     color: white;
-    padding: 25px;
-    border-radius: 18px;
-    text-align: center;
-    z-index: 200;
-    min-width: 280px;
-}
 
-#message h2 {
-    margin-top: 0;
-}
+    padding: 10px 13px;
 
-button {
-    border: none;
-    border-radius: 15px;
-    padding: 13px 20px;
-    font-size: 18px;
+    border-radius: 12px;
+
+    font-size: 17px;
+
     font-weight: bold;
-    cursor: pointer;
+
 }
 
-/* ----------------------------------------------------
-   CONTROLES MÓVILES
----------------------------------------------------- */
 
-#mobileControls {
-    position: absolute;
-    bottom: 12px;
-    left: 0;
-    width: 100%;
-    z-index: 150;
-    display: flex;
-    justify-content: space-between;
-    padding: 0 15px;
-    pointer-events: none;
-}
-
-.controlGroup {
-    display: flex;
-    gap: 12px;
-    pointer-events: auto;
-}
-
-.controlButton {
-    width: 72px;
-    height: 60px;
-    border-radius: 18px;
-    background: rgba(0,0,0,0.72);
-    color: white;
-    font-size: 28px;
-    user-select: none;
-    touch-action: none;
-}
-
-.shootButton {
-    width: 90px;
-    background: rgba(200,30,30,0.85);
-    font-size: 20px;
-}
+/* =====================================================
+   BOTÓN MÚSICA
+===================================================== */
 
 #musicButton {
+
     position: absolute;
-    top: 12px;
-    right: 12px;
+
+    top: 10px;
+
+    right: 10px;
+
     z-index: 110;
+
     width: 48px;
+
     height: 48px;
+
     padding: 0;
-    background: rgba(0,0,0,0.65);
-    color: white;
+
+    border: none;
+
     border-radius: 50%;
+
+    background:
+        rgba(0,0,0,0.70);
+
+    color: white;
+
     font-size: 22px;
+
 }
 
-/* ----------------------------------------------------
-   RESPONSIVE
----------------------------------------------------- */
 
-@media (max-width: 600px) {
+/* =====================================================
+   JUGADOR MARWAN
+===================================================== */
+
+#player {
+
+    position: absolute;
+
+    width: 90px;
+
+    height: 120px;
+
+    bottom: 105px;
+
+    left: 50%;
+
+    transform:
+        translateX(-50%);
+
+    z-index: 20;
+
+}
+
+
+/* CABEZA */
+
+.player-head {
+
+    position: absolute;
+
+    width: 58px;
+
+    height: 58px;
+
+    left: 16px;
+
+    top: 0;
+
+    border-radius: 50%;
+
+    overflow: hidden;
+
+    background: #e5a16f;
+
+}
+
+
+.player-head img {
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: cover;
+
+}
+
+
+/* CUERPO */
+
+.player-body {
+
+    position: absolute;
+
+    width: 45px;
+
+    height: 55px;
+
+    background: #1769aa;
+
+    border-radius:
+        15px 15px 8px 8px;
+
+    left: 23px;
+
+    top: 48px;
+
+}
+
+
+/* BRAZOS */
+
+.arm {
+
+    position: absolute;
+
+    width: 13px;
+
+    height: 42px;
+
+    background: #e5a16f;
+
+    border-radius: 10px;
+
+    top: 53px;
+
+}
+
+
+.arm.left {
+
+    left: 9px;
+
+    transform:
+        rotate(20deg);
+
+}
+
+
+.arm.right {
+
+    right: 9px;
+
+    transform:
+        rotate(-20deg);
+
+}
+
+
+/* PIERNAS */
+
+.leg {
+
+    position: absolute;
+
+    width: 15px;
+
+    height: 35px;
+
+    background: #333;
+
+    border-radius: 8px;
+
+    top: 98px;
+
+}
+
+
+.leg.left {
+
+    left: 24px;
+
+}
+
+
+.leg.right {
+
+    right: 24px;
+
+}
+
+
+/* ARMA */
+
+.gun {
+
+    position: absolute;
+
+    width: 48px;
+
+    height: 12px;
+
+    background: #222;
+
+    right: -12px;
+
+    top: 63px;
+
+    border-radius: 5px;
+
+}
+
+
+/* =====================================================
+   TROLL
+===================================================== */
+
+.troll {
+
+    position: absolute;
+
+    width: 62px;
+
+    height: 70px;
+
+    z-index: 10;
+
+}
+
+
+.troll-head {
+
+    position: absolute;
+
+    width: 52px;
+
+    height: 52px;
+
+    background: #6b38a8;
+
+    border-radius: 50%;
+
+    left: 5px;
+
+    top: 5px;
+
+}
+
+
+.troll-eye {
+
+    position: absolute;
+
+    width: 10px;
+
+    height: 10px;
+
+    background: white;
+
+    border-radius: 50%;
+
+    top: 18px;
+
+}
+
+
+.troll-eye::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 5px;
+
+    height: 5px;
+
+    background: black;
+
+    border-radius: 50%;
+
+    left: 2px;
+
+    top: 2px;
+
+}
+
+
+.troll-eye.left {
+
+    left: 14px;
+
+}
+
+
+.troll-eye.right {
+
+    right: 14px;
+
+}
+
+
+.troll-mouth {
+
+    position: absolute;
+
+    width: 27px;
+
+    height: 12px;
+
+    background: #222;
+
+    border-radius:
+        0 0 20px 20px;
+
+    left: 13px;
+
+    top: 33px;
+
+}
+
+
+.troll-horn {
+
+    position: absolute;
+
+    width: 15px;
+
+    height: 22px;
+
+    background: #eee;
+
+    top: -13px;
+
+    border-radius:
+        50% 50% 20% 20%;
+
+}
+
+
+.troll-horn.left {
+
+    left: 4px;
+
+    transform:
+        rotate(-20deg);
+
+}
+
+
+.troll-horn.right {
+
+    right: 4px;
+
+    transform:
+        rotate(20deg);
+
+}
+
+
+/* =====================================================
+   BALA
+===================================================== */
+
+.bullet {
+
+    position: absolute;
+
+    width: 9px;
+
+    height: 20px;
+
+    background: #ffe600;
+
+    border-radius: 5px;
+
+    z-index: 15;
+
+    box-shadow:
+        0 0 10px #ffae00;
+
+}
+
+
+/* =====================================================
+   MENSAJE
+===================================================== */
+
+#message {
+
+    position: absolute;
+
+    top: 50%;
+
+    left: 50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    background:
+        rgba(0,0,0,0.85);
+
+    color: white;
+
+    padding: 25px;
+
+    border-radius: 20px;
+
+    text-align: center;
+
+    z-index: 200;
+
+    width: 85%;
+
+    max-width: 380px;
+
+}
+
+
+#message h2 {
+
+    margin-top: 0;
+
+}
+
+
+#message button {
+
+    border: none;
+
+    border-radius: 15px;
+
+    padding: 14px 25px;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+}
+
+
+/* =====================================================
+   CONTROLES CELULAR
+===================================================== */
+
+#mobileControls {
+
+    position: absolute;
+
+    bottom: 15px;
+
+    left: 0;
+
+    width: 100%;
+
+    z-index: 150;
+
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    align-items: center;
+
+    padding:
+        0 12px;
+
+    pointer-events: none;
+
+}
+
+
+.controlGroup {
+
+    display: flex;
+
+    gap: 10px;
+
+    pointer-events: auto;
+
+}
+
+
+.controlButton {
+
+    width: 70px;
+
+    height: 65px;
+
+    border: 2px solid
+        rgba(255,255,255,0.4);
+
+    border-radius: 20px;
+
+    background:
+        rgba(0,0,0,0.72);
+
+    color: white;
+
+    font-size: 30px;
+
+    font-weight: bold;
+
+    user-select: none;
+
+    -webkit-user-select: none;
+
+    touch-action: none;
+
+}
+
+
+.shootButton {
+
+    width: 88px;
+
+    background:
+        rgba(200,30,30,0.88);
+
+    font-size: 22px;
+
+}
+
+
+/* =====================================================
+   CELULAR
+===================================================== */
+
+@media screen and (max-width: 600px) {
+
+    html,
+    body {
+
+        width: 100%;
+
+        height: 100%;
+
+        overflow: hidden;
+
+    }
+
+
+    body {
+
+        display: block;
+
+    }
+
 
     #gameContainer {
-        height: 700px;
-        border-radius: 8px;
-        border-width: 2px;
+
+        width: 100vw;
+
+        height: 100vh;
+
+        min-height: 0;
+
+        max-width: none;
+
+        border: none;
+
+        border-radius: 0;
+
+        background-size: cover;
+
     }
+
 
     #title {
+
         font-size: 18px;
-        top: 10px;
+
+        top: 8px;
+
+        width: 100%;
+
+        padding:
+            0 70px;
+
+        white-space: normal;
+
     }
+
 
     #hud {
-        font-size: 15px;
-        padding: 8px 10px;
+
+        top: 8px;
+
+        left: 8px;
+
+        font-size: 14px;
+
+        padding: 7px 10px;
+
     }
+
+
+    #musicButton {
+
+        top: 8px;
+
+        right: 8px;
+
+        width: 45px;
+
+        height: 45px;
+
+    }
+
+
+    #player {
+
+        bottom: 105px;
+
+        transform:
+            translateX(-50%)
+            scale(0.90);
+
+    }
+
+
+    .troll {
+
+        transform:
+            scale(0.90);
+
+    }
+
 
     .controlButton {
-        width: 65px;
-        height: 58px;
+
+        width: 68px;
+
+        height: 62px;
+
+        font-size: 28px;
+
     }
 
+
     .shootButton {
+
         width: 82px;
+
+    }
+
+
+    #message {
+
+        width: 85%;
+
+        padding: 20px;
+
+    }
+
+}
+
+
+/* =====================================================
+   PANTALLAS MUY PEQUEÑAS
+===================================================== */
+
+@media screen and (max-width: 380px) {
+
+    #player {
+
+        transform:
+            translateX(-50%)
+            scale(0.80);
+
+    }
+
+
+    .controlButton {
+
+        width: 60px;
+
+        height: 58px;
+
+    }
+
+
+    .shootButton {
+
+        width: 75px;
+
+    }
+
+}
+
+
+/* =====================================================
+   PANTALLA HORIZONTAL
+===================================================== */
+
+@media screen and (orientation: landscape)
+and (max-height: 600px) {
+
+    #gameContainer {
+
+        height: 100vh;
+
+    }
+
+
+    #player {
+
+        bottom: 80px;
+
+    }
+
+
+    #mobileControls {
+
+        bottom: 8px;
+
+    }
+
+
+    .controlButton {
+
+        height: 52px;
+
+    }
+
+}
+
+
+/* =====================================================
+   MENSAJE GIRAR CELULAR
+===================================================== */
+
+#rotateMessage {
+
+    display: none;
+
+    position: fixed;
+
+    z-index: 999;
+
+    top: 0;
+
+    left: 0;
+
+    width: 100vw;
+
+    height: 100vh;
+
+    background:
+        rgba(0,0,0,0.95);
+
+    color: white;
+
+    justify-content: center;
+
+    align-items: center;
+
+    text-align: center;
+
+    padding: 30px;
+
+}
+
+
+#rotateMessage div {
+
+    font-size: 22px;
+
+    font-weight: bold;
+
+}
+
+
+@media screen
+and (orientation: portrait)
+and (max-width: 600px)
+and (max-height: 550px) {
+
+    #rotateMessage {
+
+        display: flex;
+
     }
 
 }
@@ -490,89 +1083,210 @@ button {
 
 </head>
 
+
 <body>
+
+
+<!-- =====================================================
+     MENSAJE PARA GIRAR CELULAR
+===================================================== -->
+
+<div id="rotateMessage">
+
+    <div>
+
+        📱↔️
+
+        <br><br>
+
+        Gira tu celular horizontalmente
+
+        <br>
+
+        para jugar mejor 🏍️
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     JUEGO
+===================================================== -->
 
 <div id="gameContainer">
 
+
     <div class="sun"></div>
 
+
     <div id="title">
+
         🏍️ MARWAN VS TROLLS
+
     </div>
+
 
     <div id="hud">
-        Puntos: <span id="score">0</span>
+
+        🎯 Puntos:
+        <span id="score">
+            0
+        </span>
+
         &nbsp;&nbsp;
-        ❤️ <span id="lives">3</span>
+
+        ❤️
+        <span id="lives">
+            3
+        </span>
+
     </div>
 
-    <button id="musicButton">🔇</button>
+
+    <button id="musicButton">
+
+        🔇
+
+    </button>
+
+
+    <!-- MARWAN -->
 
     <div id="player">
 
-        <div class="player-head" id="playerHead"></div>
 
-        <div class="player-body"></div>
+        <div
+            class="player-head"
+            id="playerHead"
+        >
+        </div>
 
-        <div class="arm left"></div>
-        <div class="arm right"></div>
 
-        <div class="leg left"></div>
-        <div class="leg right"></div>
+        <div class="player-body">
+        </div>
 
-        <div class="gun"></div>
+
+        <div class="arm left">
+        </div>
+
+
+        <div class="arm right">
+        </div>
+
+
+        <div class="leg left">
+        </div>
+
+
+        <div class="leg right">
+        </div>
+
+
+        <div class="gun">
+        </div>
+
 
     </div>
+
+
+    <!-- CONTROLES -->
 
     <div id="mobileControls">
 
+
         <div class="controlGroup">
+
 
             <button
                 class="controlButton"
-                id="leftButton">
+                id="leftButton"
+            >
+
                 ◀
+
             </button>
+
 
             <button
                 class="controlButton"
-                id="rightButton">
+                id="rightButton"
+            >
+
                 ▶
+
             </button>
 
+
         </div>
+
 
         <div class="controlGroup">
 
+
             <button
-                class="controlButton shootButton"
-                id="shootButton">
+                class="
+                    controlButton
+                    shootButton
+                "
+                id="shootButton"
+            >
+
                 🔫
+
             </button>
 
+
         </div>
+
 
     </div>
+
+
+    <!-- PANTALLA INICIAL -->
 
     <div id="message">
 
-        <h2>🏖️ SANTA MARÍA DEL MAR</h2>
+
+        <h2>
+
+            🏖️ SANTA MARÍA DEL MAR
+
+        </h2>
+
 
         <p>
-            MARWAN VS TROLLS
+
+            <strong>
+                MARWAN VS TROLLS
+            </strong>
+
         </p>
 
+
         <p>
+
             🎯 ¡Dispara a los trolls!
+
         </p>
+
 
         <button id="startButton">
+
             ▶ EMPEZAR
+
         </button>
+
 
     </div>
 
-    <audio id="music" loop></audio>
+
+    <audio
+        id="music"
+        loop
+    >
+    </audio>
+
 
 </div>
 
@@ -583,29 +1297,76 @@ button {
    VARIABLES
 ===================================================== */
 
-const game = document.getElementById("gameContainer");
+const game =
+    document.getElementById(
+        "gameContainer"
+    );
 
-const player = document.getElementById("player");
 
-const scoreElement = document.getElementById("score");
+const player =
+    document.getElementById(
+        "player"
+    );
 
-const livesElement = document.getElementById("lives");
 
-const message = document.getElementById("message");
+const scoreElement =
+    document.getElementById(
+        "score"
+    );
 
-const startButton = document.getElementById("startButton");
 
-const musicButton = document.getElementById("musicButton");
+const livesElement =
+    document.getElementById(
+        "lives"
+    );
 
-const music = document.getElementById("music");
 
-const playerHead = document.getElementById("playerHead");
+const message =
+    document.getElementById(
+        "message"
+    );
 
-const leftButton = document.getElementById("leftButton");
 
-const rightButton = document.getElementById("rightButton");
+const startButton =
+    document.getElementById(
+        "startButton"
+    );
 
-const shootButton = document.getElementById("shootButton");
+
+const musicButton =
+    document.getElementById(
+        "musicButton"
+    );
+
+
+const music =
+    document.getElementById(
+        "music"
+    );
+
+
+const playerHead =
+    document.getElementById(
+        "playerHead"
+    );
+
+
+const leftButton =
+    document.getElementById(
+        "leftButton"
+    );
+
+
+const rightButton =
+    document.getElementById(
+        "rightButton"
+    );
+
+
+const shootButton =
+    document.getElementById(
+        "shootButton"
+    );
 
 
 let score = 0;
@@ -626,10 +1387,12 @@ let musicPlaying = false;
 
 
 /* =====================================================
-   IMAGEN DE MARWAN
+   IMAGEN MARWAN
 ===================================================== */
 
-const marwanImage = "__MARWAN_IMAGE__";
+const marwanImage =
+    "__MARWAN_IMAGE__";
+
 
 if (marwanImage !== "") {
 
@@ -645,32 +1408,41 @@ if (marwanImage !== "") {
    MÚSICA
 ===================================================== */
 
-const musicSource = "__MUSIC_SOURCE__";
+const musicSource =
+    "__MUSIC_SOURCE__";
+
 
 if (musicSource !== "") {
 
-    music.src = musicSource;
+    music.src =
+        musicSource;
 
 }
 
 
 /* =====================================================
-   MÚSICA
+   INICIAR MÚSICA
 ===================================================== */
 
 function startMusic() {
 
     if (musicSource === "") {
+
         return;
+
     }
 
+
     music.volume = 0.35;
+
 
     music.play()
         .then(function() {
 
             musicPlaying = true;
-            musicButton.textContent = "🔊";
+
+            musicButton.textContent =
+                "🔊";
 
         })
         .catch(function() {
@@ -682,19 +1454,25 @@ function startMusic() {
 }
 
 
+/* =====================================================
+   BOTÓN MÚSICA
+===================================================== */
+
 musicButton.addEventListener(
     "click",
     function() {
 
+
         if (musicSource === "") {
 
             alert(
-                "Coloca el archivo musica.mp3 dentro de la carpeta assets."
+                "Coloca musica.mp3 dentro de assets."
             );
 
             return;
 
         }
+
 
         if (musicPlaying) {
 
@@ -702,15 +1480,20 @@ musicButton.addEventListener(
 
             musicPlaying = false;
 
-            musicButton.textContent = "🔇";
+            musicButton.textContent =
+                "🔇";
 
-        } else {
+        }
+
+        else {
 
             music.play()
                 .then(function() {
 
                     musicPlaying = true;
-                    musicButton.textContent = "🔊";
+
+                    musicButton.textContent =
+                        "🔊";
 
                 });
 
@@ -740,13 +1523,22 @@ function startGame() {
 
     gameRunning = true;
 
-    scoreElement.textContent = score;
 
-    livesElement.textContent = lives;
+    scoreElement.textContent =
+        score;
 
-    player.style.left = playerX + "%";
 
-    message.style.display = "none";
+    livesElement.textContent =
+        lives;
+
+
+    player.style.left =
+        playerX + "%";
+
+
+    message.style.display =
+        "none";
+
 
     document
         .querySelectorAll(".troll")
@@ -756,6 +1548,7 @@ function startGame() {
 
         });
 
+
     document
         .querySelectorAll(".bullet")
         .forEach(function(bullet) {
@@ -764,9 +1557,12 @@ function startGame() {
 
         });
 
+
     startMusic();
 
+
     startTrollSpawner();
+
 
     gameLoop();
 
@@ -774,14 +1570,17 @@ function startGame() {
 
 
 /* =====================================================
-   CONTROLES DE TECLADO
+   TECLADO PC
 ===================================================== */
 
 document.addEventListener(
     "keydown",
     function(event) {
 
-        keys[event.key.toLowerCase()] = true;
+        keys[
+            event.key.toLowerCase()
+        ] = true;
+
 
         if (
             event.key === " " ||
@@ -790,8 +1589,11 @@ document.addEventListener(
 
             event.preventDefault();
 
+
             if (gameRunning) {
+
                 shoot();
+
             }
 
         }
@@ -804,17 +1606,23 @@ document.addEventListener(
     "keyup",
     function(event) {
 
-        keys[event.key.toLowerCase()] = false;
+        keys[
+            event.key.toLowerCase()
+        ] = false;
 
     }
 );
 
 
 /* =====================================================
-   BOTONES MÓVILES
+   CONTROLES CELULAR
 ===================================================== */
 
-function setupMoveButton(button, direction) {
+function setupMoveButton(
+    button,
+    direction
+) {
+
 
     button.addEventListener(
         "pointerdown",
@@ -822,10 +1630,12 @@ function setupMoveButton(button, direction) {
 
             event.preventDefault();
 
-            keys[direction] = true;
+            keys[direction] =
+                true;
 
         }
     );
+
 
     button.addEventListener(
         "pointerup",
@@ -833,25 +1643,41 @@ function setupMoveButton(button, direction) {
 
             event.preventDefault();
 
-            keys[direction] = false;
+            keys[direction] =
+                false;
 
         }
     );
+
 
     button.addEventListener(
         "pointercancel",
         function() {
 
-            keys[direction] = false;
+            keys[direction] =
+                false;
 
         }
     );
+
 
     button.addEventListener(
         "pointerleave",
         function() {
 
-            keys[direction] = false;
+            keys[direction] =
+                false;
+
+        }
+    );
+
+
+    button.addEventListener(
+        "pointerout",
+        function() {
+
+            keys[direction] =
+                false;
 
         }
     );
@@ -871,14 +1697,21 @@ setupMoveButton(
 );
 
 
+/* =====================================================
+   DISPARO CELULAR
+===================================================== */
+
 shootButton.addEventListener(
     "pointerdown",
     function(event) {
 
         event.preventDefault();
 
+
         if (gameRunning) {
+
             shoot();
+
         }
 
     }
@@ -886,22 +1719,21 @@ shootButton.addEventListener(
 
 
 /* =====================================================
-   MOVIMIENTO
+   MOVIMIENTO MARWAN
 ===================================================== */
 
 function movePlayer() {
 
+
     if (!gameRunning) {
+
         return;
+
     }
 
-    const gameWidth =
-        game.clientWidth;
-
-    const playerWidth =
-        player.offsetWidth;
 
     const speed = 0.8;
+
 
     if (
         keys["arrowleft"] ||
@@ -912,6 +1744,7 @@ function movePlayer() {
 
     }
 
+
     if (
         keys["arrowright"] ||
         keys["d"]
@@ -921,13 +1754,20 @@ function movePlayer() {
 
     }
 
+
     if (playerX < 7) {
+
         playerX = 7;
+
     }
 
+
     if (playerX > 93) {
+
         playerX = 93;
+
     }
+
 
     player.style.left =
         playerX + "%";
@@ -941,65 +1781,100 @@ function movePlayer() {
 
 function shoot() {
 
+
     if (!gameRunning) {
+
         return;
+
     }
 
-    const bullet =
-        document.createElement("div");
 
-    bullet.className = "bullet";
+    const bullet =
+        document.createElement(
+            "div"
+        );
+
+
+    bullet.className =
+        "bullet";
+
 
     const playerRect =
         player.getBoundingClientRect();
 
+
     const gameRect =
         game.getBoundingClientRect();
+
 
     const bulletX =
         playerRect.left -
         gameRect.left +
         playerRect.width / 2;
 
+
     const bulletY =
         playerRect.top -
         gameRect.top -
         20;
 
+
     bullet.style.left =
         bulletX + "px";
+
 
     bullet.style.top =
         bulletY + "px";
 
-    game.appendChild(bullet);
 
-    moveBullet(bullet);
+    game.appendChild(
+        bullet
+    );
+
+
+    moveBullet(
+        bullet
+    );
 
 }
 
 
 /* =====================================================
-   MOVIMIENTO DE BALA
+   MOVIMIENTO BALA
 ===================================================== */
 
-function moveBullet(bullet) {
+function moveBullet(
+    bullet
+) {
+
 
     let y =
-        parseFloat(bullet.style.top);
+        parseFloat(
+            bullet.style.top
+        );
+
 
     const speed = 8;
 
+
     function animateBullet() {
 
-        if (!bullet.parentElement) {
+
+        if (
+            !bullet.parentElement
+        ) {
+
             return;
+
         }
+
 
         y -= speed;
 
+
         bullet.style.top =
             y + "px";
+
 
         if (y < -30) {
 
@@ -1009,9 +1884,15 @@ function moveBullet(bullet) {
 
         }
 
-        checkBulletCollision(bullet);
 
-        if (bullet.parentElement) {
+        checkBulletCollision(
+            bullet
+        );
+
+
+        if (
+            bullet.parentElement
+        ) {
 
             requestAnimationFrame(
                 animateBullet
@@ -1020,6 +1901,7 @@ function moveBullet(bullet) {
         }
 
     }
+
 
     requestAnimationFrame(
         animateBullet
@@ -1032,36 +1914,60 @@ function moveBullet(bullet) {
    COLISIÓN
 ===================================================== */
 
-function checkBulletCollision(bullet) {
+function checkBulletCollision(
+    bullet
+) {
+
 
     const bulletRect =
         bullet.getBoundingClientRect();
 
+
     const trolls =
-        document.querySelectorAll(".troll");
+        document.querySelectorAll(
+            ".troll"
+        );
+
 
     trolls.forEach(
         function(troll) {
 
+
             const trollRect =
                 troll.getBoundingClientRect();
 
+
             if (
+
                 bulletRect.left <
-                    trollRect.right &&
+                trollRect.right &&
+
                 bulletRect.right >
-                    trollRect.left &&
+                trollRect.left &&
+
                 bulletRect.top <
-                    trollRect.bottom &&
+                trollRect.bottom &&
+
                 bulletRect.bottom >
-                    trollRect.top
+                trollRect.top
+
             ) {
+
 
                 troll.remove();
 
-                bullet.remove();
+
+                if (
+                    bullet.parentElement
+                ) {
+
+                    bullet.remove();
+
+                }
+
 
                 score += 10;
+
 
                 scoreElement.textContent =
                     score;
@@ -1080,83 +1986,124 @@ function checkBulletCollision(bullet) {
 
 function createTroll() {
 
+
     if (!gameRunning) {
+
         return;
+
     }
 
-    const troll =
-        document.createElement("div");
 
-    troll.className = "troll";
+    const troll =
+        document.createElement(
+            "div"
+        );
+
+
+    troll.className =
+        "troll";
+
 
     troll.innerHTML = `
 
         <div class="troll-head">
 
-            <div class="troll-horn left"></div>
+            <div
+                class="troll-horn left">
+            </div>
 
-            <div class="troll-horn right"></div>
+            <div
+                class="troll-horn right">
+            </div>
 
-            <div class="troll-eye left"></div>
+            <div
+                class="troll-eye left">
+            </div>
 
-            <div class="troll-eye right"></div>
+            <div
+                class="troll-eye right">
+            </div>
 
-            <div class="troll-mouth"></div>
+            <div
+                class="troll-mouth">
+            </div>
 
         </div>
 
     `;
 
+
     const maxX =
         game.clientWidth - 70;
 
+
     const x =
-        Math.random() * maxX;
+        Math.random() *
+        maxX;
+
 
     troll.style.left =
         x + "px";
 
+
     troll.style.top =
         "-80px";
 
-    game.appendChild(troll);
 
-    moveTroll(troll);
+    game.appendChild(
+        troll
+    );
+
+
+    moveTroll(
+        troll
+    );
 
 }
 
 
 /* =====================================================
-   MOVIMIENTO DE TROLL
+   MOVIMIENTO TROLL
 ===================================================== */
 
-function moveTroll(troll) {
+function moveTroll(
+    troll
+) {
+
 
     let y =
-        parseFloat(troll.style.top);
+        parseFloat(
+            troll.style.top
+        );
+
 
     /*
-       VELOCIDAD LENTA
+       TROLLS LENTOS
     */
 
     let speed = 0.55;
 
-    /*
-       Aumenta muy poco
-       conforme sube el puntaje
-    */
 
     speed +=
-        Math.floor(score / 100) * 0.05;
+        Math.floor(
+            score / 100
+        ) * 0.05;
 
 
     function animateTroll() {
 
-        if (!troll.parentElement) {
+
+        if (
+            !troll.parentElement
+        ) {
+
             return;
+
         }
 
+
         y += speed;
+
 
         troll.style.top =
             y + "px";
@@ -1165,44 +2112,53 @@ function moveTroll(troll) {
         const playerRect =
             player.getBoundingClientRect();
 
+
         const trollRect =
             troll.getBoundingClientRect();
 
 
-        /* ---------------------------------------------
-           TROLL TOCA AL JUGADOR
-        --------------------------------------------- */
+        /* TROLL GOLPEA AL JUGADOR */
 
         if (
+
             trollRect.bottom >=
-                playerRect.top &&
+            playerRect.top &&
+
             trollRect.left <
-                playerRect.right &&
+            playerRect.right &&
+
             trollRect.right >
-                playerRect.left
+            playerRect.left
+
         ) {
+
 
             troll.remove();
 
+
             loseLife();
+
 
             return;
 
         }
 
 
-        /* ---------------------------------------------
-           TROLL LLEGA AL SUELO
-        --------------------------------------------- */
+        /* TROLL LLEGA AL SUELO */
 
         if (
+
             y >
             game.clientHeight - 110
+
         ) {
+
 
             troll.remove();
 
+
             loseLife();
+
 
             return;
 
@@ -1214,6 +2170,7 @@ function moveTroll(troll) {
         );
 
     }
+
 
     requestAnimationFrame(
         animateTroll
@@ -1228,14 +2185,20 @@ function moveTroll(troll) {
 
 function loseLife() {
 
+
     if (!gameRunning) {
+
         return;
+
     }
+
 
     lives--;
 
+
     livesElement.textContent =
         lives;
+
 
     if (lives <= 0) {
 
@@ -1252,7 +2215,10 @@ function loseLife() {
 
 function gameOver() {
 
-    gameRunning = false;
+
+    gameRunning =
+        false;
+
 
     if (trollTimer) {
 
@@ -1260,43 +2226,46 @@ function gameOver() {
             trollTimer
         );
 
-        trollTimer = null;
+        trollTimer =
+            null;
 
     }
 
-    if (animationFrame) {
-
-        cancelAnimationFrame(
-            animationFrame
-        );
-
-    }
 
     message.innerHTML = `
 
-        <h2>💥 GAME OVER</h2>
+        <h2>
+            💥 GAME OVER
+        </h2>
 
         <p>
             Puntuación:
-            <strong>${score}</strong>
+            <strong>
+                ${score}
+            </strong>
         </p>
 
         <p>
             🏖️ Santa María del Mar
         </p>
 
-        <button id="restartButton">
+        <button
+            id="restartButton"
+        >
             🔄 JUGAR DE NUEVO
         </button>
 
     `;
+
 
     message.style.display =
         "block";
 
 
     document
-        .getElementById("restartButton")
+        .getElementById(
+            "restartButton"
+        )
         .addEventListener(
             "click",
             startGame
@@ -1311,6 +2280,7 @@ function gameOver() {
 
 function startTrollSpawner() {
 
+
     if (trollTimer) {
 
         clearInterval(
@@ -1318,6 +2288,7 @@ function startTrollSpawner() {
         );
 
     }
+
 
     trollTimer =
         setInterval(
@@ -1333,16 +2304,21 @@ function startTrollSpawner() {
 
 
 /* =====================================================
-   LOOP DEL JUEGO
+   LOOP PRINCIPAL
 ===================================================== */
 
 function gameLoop() {
 
+
     if (!gameRunning) {
+
         return;
+
     }
 
+
     movePlayer();
+
 
     animationFrame =
         requestAnimationFrame(
@@ -1354,18 +2330,26 @@ function gameLoop() {
 </script>
 
 </body>
+
 </html>
 """
 
 
-# ---------------------------------------------------------
-# INSERTAR IMAGEN Y MÚSICA
-# ---------------------------------------------------------
+# =========================================================
+# INSERTAR ARCHIVOS
+# =========================================================
 
 game = game.replace(
     "__MARWAN_IMAGE__",
     marwan_image
 )
+
+
+game = game.replace(
+    "__BACKGROUND_IMAGE__",
+    background_image
+)
+
 
 game = game.replace(
     "__MUSIC_SOURCE__",
@@ -1373,9 +2357,9 @@ game = game.replace(
 )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # MOSTRAR JUEGO
-# ---------------------------------------------------------
+# =========================================================
 
 components.html(
     game,
